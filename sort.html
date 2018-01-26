@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="css/viz.css">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/grid.css">
+
+</head>
+<body>
+
+<div class="grid-page">
+    <div class="header">
+        <div>HOME</div>
+    </div>
+    <div class="menu">
+        <a class="menu1" id="bubbleSort">Bubble Sort</a>
+        <a class="menu2" id="selectionSort">Selection Sort</a>
+        <a class="menu3" id="quickSort">Quick Sort</a>
+    </div>
+    <div class="content">
+
+        <div id="status" class="panel"><p></p></div>
+        <div id="status-hide" class="panel-hide"><img src="https://visualgo.net/img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+
+        <div id="codetrace" class="panel">
+            <p id="code1" style="padding-top: 10px;"></p>
+            <p id="code2"></p>
+            <p id="code3"></p>
+            <p id="code4"></p>
+            <p id="code5"></p>
+            <p id="code6"></p>
+            <p id="code7" style="padding-bottom: 10px;"></p>
+        </div>
+        <div id="codetrace-hide" class="panel-hide"><img src="https://visualgo.net/img/arrow_white_right.png" alt=">"
+                                                         title="show/hide codetrace panel"/></div>
+        <svg id="viz-canvas"></svg>
+    </div>
+    <div class="footer">
+        <!--<div id="media-controls">-->
+            <!--<div id='speed-control'>slow<div id='speed-input'></div>fast</div>-->
+            <!--<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="https://visualgo.net/img/goToBeginning.png" alt="go to beginning"></span>-->
+            <!--<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="https://visualgo.net/img/prevFrame.png" alt="previous frame"></span>-->
+            <!--<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="https://visualgo.net/img/pause.png" alt="pause"></span>-->
+            <!--<span id="play" class="media-control-button" title="play" onclick=play()><img src="https://visualgo.net/img/play.png" alt="play"></span>-->
+            <!--<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="https://visualgo.net/img/nextFrame.png" alt="next frame"></span>-->
+            <!--<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="https://visualgo.net/img/goToEnd.png" alt="go to end"></span>-->
+            <!--<div id="progress-bar" class="media-control-button"></div>-->
+        <!--</div>-->
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" src="//code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+        integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
+<script src="js/viz.js"></script>
+
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="js/sort.js"></script>
+
+</body>
+</html>
