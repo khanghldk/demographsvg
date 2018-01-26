@@ -651,8 +651,11 @@ function init() {
     showStatusPanel();
 }
 
+var title = document.getElementById('title');
+
 $('#bubbleSort').click(function () {
     if (!issPlaying) {
+        title.innerHTML = "Bubble Sort";
         init();
         bubbleSort();
     } else {
@@ -662,6 +665,7 @@ $('#bubbleSort').click(function () {
 
 $('#selectionSort').click(function () {
     if (!issPlaying) {
+        title.innerHTML = "Selection Sort";
         init();
         selectionSort();
     } else {
@@ -671,6 +675,7 @@ $('#selectionSort').click(function () {
 
 $('#quickSort').click(function () {
     if (!issPlaying) {
+        title.innerHTML = "Bubble Sort";
         init();
         quickSort();
     } else {
@@ -682,14 +687,17 @@ window.onload = function() {
     var reloading = sessionStorage.getItem("type");
     switch (reloading) {
         case "bubble" :
+            title.innerHTML = "Bubble Sort";
             init();
             bubbleSort();
             break;
         case "selection" :
+            title.innerHTML = "Selection Sort";
             init();
             selectionSort();
             break;
         case "quick":
+            title.innerHTML = "Quick Sort";
             init();
             quickSort();
             break;
