@@ -25,7 +25,6 @@
 .menu {
     grid-column: 1 / 2;
     display: grid;
-    display: grid;
     grid-gap: 10px;
     grid-template-rows: repeat(12, 1fr);
     padding-top: 10px;

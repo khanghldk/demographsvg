@@ -11,34 +11,30 @@ html, body {
 }
 
 #codetrace, #status {
-    background: #eeeeee;
+    /*background: #eeeeee;*/
     font-family: "PT Sans";
     font-size: 13px;
     overflow-x: hidden;
     overflow-y: hidden;
 }
 
-.header {
+.container > div:nth-child(1n) {
     background-color: #96ceb4;
 }
 
-.header :nth-child(2) {
-    padding: 0 40px;
-}
-
-.menu {
-    background-color: #ff6f69;
-}
-
-.content {
-    background-color: white;
-}
-
-.footer {
+.container > div:nth-child(3n) {
     background-color: #88d8b0;
 }
 
-.grid-page > div {
+.container > div:nth-child(2n) {
+    background-color: #ff6f69;
+}
+
+.container > div:nth-child(4n) {
+    background-color: white;
+}
+
+.container > div {
     color: #ffeead;
     align-items: center;
     padding: 0px 20px;

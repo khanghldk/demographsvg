@@ -171,16 +171,7 @@ FunctionList.text_y = function (d) {
 }
 
 FunctionList.g_transform = function (d) {
-    if (d.secondaryPositionStatus == POSITION_USE_PRIMARY)
-        return 'translate(' + (centreBarsOffset + d.position * barWidth) + ", " + (maxHeight - scaler(d.value)) + ')';
-    else if (d.secondaryPositionStatus == POSITION_USE_SECONDARY_IN_DEFAULT_POSITION)
-        return 'translate(' + (centreBarsOffset + d.position * barWidth) + ", " + (maxHeight * 2 + gapBetweenPrimaryAndSecondaryRows - scaler(d.value)) + ')';
-    else if (d.secondaryPositionStatus >= 0)
-        return 'translate(' + (centreBarsOffset + d.secondaryPositionStatus * barWidth) + ", " + (maxHeight * 2 + gapBetweenPrimaryAndSecondaryRows - scaler(d.value)) + ')';
-    else if (d.secondaryPositionStatus < 0)
-        return 'translate(' + ((d.secondaryPositionStatus * -1 - 1) * barWidth) + ", " + (maxHeight * 2 + gapBetweenPrimaryAndSecondaryRows - scaler(d.value)) + ')';
-    else
-        return 'translation(0, 0)'; // error
+    return 'translate(' + (centreBarsOffset + d.position * barWidth) + ", " + (maxHeight - scaler(d.value)) + ')';
 }
 
 // end class FunctionList
@@ -549,11 +540,14 @@ var drawState = function (stateIndex) {
 };
 
 var drawBars = function (state) {
+    console.log(state.entries.length);
+    barWidth = width / (state.entries.length);
     scaler.domain([0, d3.max(state.entries, function (d) {
         return d.value;
     })]);
 
-    centreBarsOffset = (maxNumOfElements - (state.entries.length - state.barsCountOffset)) * barWidth / 2;
+    centreBarsOffset = 0;
+    console.log(centreBarsOffset);
 
     var canvasData = canvas.selectAll("g").data(state.entries);
 
@@ -572,7 +566,7 @@ var drawBars = function (state) {
 
     newData.append("text")
         .attr("dy", ".35em")
-        .attr("x", (barWidth - gapBetweenBars) / 2)
+        .attr("x", (barWidth - gapBetweenBars - 10) / 2)
         .attr("y", FunctionList.text_y)
         .text(function (d) {
             return d.value;
@@ -733,7 +727,7 @@ function reloadQuick() {
 }
 
 function responsivefy(svg) {
-    // get container + svg aspect ratio
+
     var container = d3.select(svg.node().parentNode),
         width = parseInt(svg.style("width")),
         height = parseInt(svg.style("height")),
@@ -742,19 +736,12 @@ function responsivefy(svg) {
     console.log("width: " + width);
     console.log("height: " + height);
 
-    // add viewBox and preserveAspectRatio properties,
-    // and call resize so that svg resizes on inital page load
     svg.attr("viewBox", "0 0 " + width + " " + height)
         .attr("preserveAspectRatio", "xMinYMid")
         .call(resize);
 
-    // to register multiple listeners for same event type,
-    // you need to add namespace, i.e., 'click.foo'
-    // necessary if you call invoke this function for multiple svgs
-    // api docs: https://github.com/mbostock/d3/wiki/Selections#on
     d3.select(window).on("resize." + container.attr("id"), resize);
 
-    // get width of container and resize svg to fit it
     function resize() {
         var targetWidth = parseInt(container.style("width"));
         svg.attr("width", targetWidth);
