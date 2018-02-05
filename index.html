@@ -4,6 +4,8 @@
     <!--<link rel="stylesheet" href="css/basic.css">-->
     <link rel="stylesheet" href="css/viz.css">
     <link rel="stylesheet" href="css/common.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet">
 </head>
 <body>
 <div class="container">
@@ -22,14 +24,22 @@
     <div class="gridNote">
 
     </div>
-    <div class="gridTimeline">
-
+    <div class="gridTimeline" style="background-color: white; text-align: center">
+        <i class="material-icons" id="go-to-beginning" onclick="goToBeginning()">first_page</i>
+        <i class="material-icons" id="previous" onclick="stepBackward()">skip_previous</i>
+        <i class="material-icons" id="pause" onclick="pause()">pause</i>
+        <i class="material-icons" id="play" onclick="play()">play_arrow</i>
+        <i class="material-icons" id="next" onclick="stepForward()">skip_next</i>
+        <i class="material-icons" id="go-to-end" onclick="goToEnd()">last_page</i>
     </div>
     <div class="gridAction" style="background-color: white">
-        <div id="status" class="panel"><p></p></div>
+        <div id="status" class="panel"><p style="font-size: 15px"></p></div>
         <!--<div id="status-hide" class="panel-hide">-->
             <!--<img src="https://visualgo.net/img/arrow_white_right.png" alt=">" title="show/hide status panel" />-->
         <!--</div>-->
+    </div>
+    <div class="gridLog" style="margin: auto; background-color: white">
+        <div id="log" class="panel"><p style="font-size: 15px"></p></div>
     </div>
     <div class="gridPseudo" style="background-color: white">
         <div id="codetrace" class="panel">
@@ -57,6 +67,7 @@
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script src="js/sort_ver2.js"></script>
 <script>
+    var gw = new Sorting();
     var svg = d3.select("#viz-canvas");
     window.addEventListener('resize', responsivefy(svg));
 </script>
