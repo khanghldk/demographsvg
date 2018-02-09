@@ -81,6 +81,10 @@
     grid-row: 6;
 }
 
+.menu7 {
+    grid-row: 7;
+}
+
 .gridGraph {
     grid-area: g;
 }

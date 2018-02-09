@@ -844,6 +844,91 @@ var Sorting = function () {
         return true;
     }
 
+    this.mergeSort = function (callback) {
+        var numElements = statelist[0].backlinks.length;
+        var state = StateHelper.copyState(statelist[0]);
+
+        populatePseudocode([
+            'split each element into partitions of size 1',
+            'recursively merge adjancent partitions',
+            '  for i = leftPartStartIndex to rightPartLastIndex inclusive',
+            '    if leftPartHeadValue <= rightPartHeadValue',
+            '      copy leftPartHeadValue',
+            '    else: copy rightPartHeadValue',
+            'copy elements back to original array'
+        ]);
+
+        this.mergeSortSplit(state, 0, numElements);
+
+        state.status = "List sorted!";
+        for (var i = 0; i < numElements; i++) {
+            state.backlinks[i].highlight = HIGHLIGHT_SORTED;
+        }
+        StateHelper.updateCopyPush(statelist, state);
+        this.play(callback);
+
+        return true;
+    }
+
+    this.mergeSortSplit = function (state, startIndex, endIndex) {
+        if (endIndex - startIndex <= 1) {
+            return;
+        }
+
+        var midIndex = Math.ceil((startIndex + endIndex) / 2);
+        this.mergeSortSplit(state, startIndex, midIndex);
+        this.mergeSortSplit(state, midIndex, endIndex);
+        this.mergeSortMerge(state, startIndex, midIndex, endIndex);
+
+        // Copy sorted array back to original array
+        state.status = "Copy sorted elements back to original array.";
+        state.lineNo = 7;
+
+        var duplicatedArray = new Array();
+        for (var i = startIndex; i < endIndex; i++) {
+            var newPosition = state.backlinks[i].secondaryPositionStatus;
+            duplicatedArray[newPosition] = state.backlinks[i];
+        }
+
+        for (var i = startIndex; i < endIndex; i++) {
+            state.backlinks[i] = duplicatedArray[i];
+        }
+
+        for (var i = startIndex; i < endIndex; i++) {
+            state.backlinks[i].secondaryPositionStatus = POSITION_USE_PRIMARY;
+            state.backlinks[i].highlight = HIGHLIGHT_NONE;
+            StateHelper.updateCopyPush(statelist, state);
+        }
+    }
+
+    this.mergeSortMerge = function (state, startIndex, midIndex, endIndex) {
+        var leftIndex = startIndex;
+        var rightIndex = midIndex;
+
+        for (var i = startIndex; i < endIndex; i++) {
+            state.backlinks[i].highlight = HIGHLIGHT_STANDARD;
+        }
+        state.lineNo = 2;
+        StateHelper.updateCopyPush(statelist, state);
+
+        for (var i = startIndex; i < endIndex; i++) {
+
+            if (leftIndex < midIndex && (rightIndex >= endIndex || state.backlinks[leftIndex].value <= state.backlinks[rightIndex].value)) {
+                state.backlinks[leftIndex].secondaryPositionStatus = i;
+                state.lineNo = [3, 4, 5];
+
+                leftIndex++;
+                StateHelper.updateCopyPush(statelist, state);
+            } else {
+                state.backlinks[rightIndex].secondaryPositionStatus = i;
+                state.lineNo  = [3, 6];
+
+                rightIndex++;
+                StateHelper.updateCopyPush(statelist, state);
+            }
+        }
+    }
+
     var drawCurrentState = function () {
         drawState(currentStep);
         if (currentStep == (statelist.length - 1)) {
@@ -1090,6 +1175,18 @@ $('#shellSort').click(function () {
 
         note.innerHTML = '<h1>Shell Sort</h1><br/>';
         note.innerHTML += "<div>Shellsort, also known as Shell sort or Shell's method, is an in-place comparison sort. It can be seen as either a generalization of sorting by exchange (bubble sort) or sorting by insertion (insertion sort). The method starts by sorting pairs of elements far apart from each other, then progressively reducing the gap between elements to be compared.</div>";
+    } else {
+        sort();
+    }
+});
+
+$('#mergeSort').click(function () {
+    if (!gw.issPlaying) {
+        title.innerHTML = "Merge Sort";
+        changeSortType(gw.mergeSort);
+
+        note.innerHTML = '<h1>Merge Sort</h1><br/>';
+        note.innerHTML += "<div>In computer science, merge sort (also commonly spelled mergesort) is an efficient, general-purpose, comparison-based sorting algorithm. Most implementations produce a stable sort, which means that the implementation preserves the input order of equal elements in the sorted output. Mergesort is a divide and conquer algorithm that was invented by John von Neumann in 1945. A detailed description and analysis of bottom-up mergesort appeared in a report by Goldstine and Neumann as early as 1948.</div>";
     } else {
         sort();
     }
