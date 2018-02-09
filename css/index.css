@@ -7,7 +7,7 @@
     grid-template-areas:
             "h h h h h h h h h h h h h h h h"
             "m m g g g g g g g g g g n n n n"
-            "m m g g g g g g g g g g n n n n"
+            "m m g g g g g g g g g g n n n n    "
             "m m t t t t t t t t t t p p p p"
             "m m l l l l l a a a a a p p p p"
             "f f f f f f f f f f f f f f f f";
@@ -67,6 +67,18 @@
 
 .menu3 {
     grid-row: 3;
+}
+
+.menu4 {
+    grid-row: 4;
+}
+
+.menu5 {
+    grid-row: 5;
+}
+
+.menu6 {
+    grid-row: 6;
 }
 
 .gridGraph {

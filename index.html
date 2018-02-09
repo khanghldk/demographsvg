@@ -1,7 +1,6 @@
 <html>
 <head>
     <link rel="stylesheet" href="css/index.css">
-    <!--<link rel="stylesheet" href="css/basic.css">-->
     <link rel="stylesheet" href="css/viz.css">
     <link rel="stylesheet" href="css/common.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -17,12 +16,17 @@
         <a class="menu1" id="bubbleSort">Bubble Sort</a>
         <a class="menu2" id="selectionSort">Selection Sort</a>
         <a class="menu3" id="quickSort">Quick Sort</a>
+        <a class="menu4" id="insertionSort">Insertion Sort</a>
+        <a class="menu5" id="cocktailSort">Cocktail Shaker Sort</a>
+        <a class="menu6" id="shellSort">Shell Sort</a>
     </div>
     <div class="gridGraph" style="background-color: white">
         <svg id="viz-canvas" style="margin: 10px"></svg>
     </div>
     <div class="gridNote">
+        <div id="noteContent" style="text-align: justify">
 
+        </div>
     </div>
     <div class="gridTimeline" style="background-color: white; text-align: center">
         <i class="material-icons" id="go-to-beginning" onclick="goToBeginning()">first_page</i>
@@ -34,9 +38,6 @@
     </div>
     <div class="gridAction" style="background-color: white">
         <div id="status" class="panel"><p style="font-size: 15px"></p></div>
-        <!--<div id="status-hide" class="panel-hide">-->
-            <!--<img src="https://visualgo.net/img/arrow_white_right.png" alt=">" title="show/hide status panel" />-->
-        <!--</div>-->
     </div>
     <div class="gridLog" style="margin: auto; background-color: white">
         <div id="log" class="panel"><p style="font-size: 15px"></p></div>
@@ -51,10 +52,6 @@
             <p id="code6"></p>
             <p id="code7" style="padding-bottom: 10px;"></p>
         </div>
-        <!--<div id="codetrace-hide" class="panel-hide">-->
-            <!--<img src="https://visualgo.net/img/arrow_white_right.png" alt=">"-->
-                                                         <!--title="show/hide codetrace panel"/>-->
-        <!--</div>-->
     </div>
     <div class="gridFooter">FOOTER</div>
 </div>

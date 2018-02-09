@@ -1,4 +1,3 @@
-
 var statusCodetraceWidth = 420;
 
 var colourArray = ["#52bc69", "#d65775", "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"];
@@ -54,23 +53,29 @@ var Sorting = function () {
     this.selectedSortFunction;
 
 // list of states
-    var statelist = new Array();
 
-    var scaler = d3.scale
+    var scaler;
+    var canvas;
+    var width;
+
+    scaler = d3.scale
         .linear()
         .range([0, maxHeight]);
 
-    var log;
+    width = $(".gridGraph").width() - 10;
 
-// var canvas = d3.select("#viz-canvas")
-//     .attr("height", maxHeight * 2 + gapBetweenPrimaryAndSecondaryRows)
-//     .attr("width", barWidth * maxNumOfElements);
-
-    var width = $(".gridGraph").width() - 10;
-
-    var canvas = d3.select("#viz-canvas")
-        .attr("height", maxHeight + gapBetweenPrimaryAndSecondaryRows)
+    canvas = d3.select("#viz-canvas")
+        .attr("height", maxHeight * 2  + gapBetweenPrimaryAndSecondaryRows)
         .attr("width", width);
+
+    var statelist = new Array();
+
+
+    // var canvas = d3.select("#viz-canvas")
+    //     .attr("height", maxHeight * 2 + gapBetweenPrimaryAndSecondaryRows)
+    //     .attr("width", barWidth * maxNumOfElements);
+
+
 
 // var canvas = d3.select("div#viz-canvas")
 //     .append("svg")
@@ -183,7 +188,16 @@ var Sorting = function () {
     }
 
     FunctionList.g_transform = function (d) {
-        return 'translate(' + (centreBarsOffset + d.position * barWidth) + ", " + (maxHeight - scaler(d.value)) + ')';
+        if (d.secondaryPositionStatus == POSITION_USE_PRIMARY)
+            return 'translate(' + (centreBarsOffset + d.position * barWidth) + ", " + (maxHeight - scaler(d.value)) + ')';
+        else if (d.secondaryPositionStatus == POSITION_USE_SECONDARY_IN_DEFAULT_POSITION)
+            return 'translate(' + (centreBarsOffset + d.position * barWidth) + ", " + (maxHeight * 2 + gapBetweenPrimaryAndSecondaryRows - scaler(d.value)) + ')';
+        else if (d.secondaryPositionStatus >= 0)
+            return 'translate(' + (centreBarsOffset + d.secondaryPositionStatus * barWidth) + ", " + (maxHeight * 2 + gapBetweenPrimaryAndSecondaryRows - scaler(d.value)) + ')';
+        else if (d.secondaryPositionStatus < 0)
+            return 'translate(' + ((d.secondaryPositionStatus * -1 - 1) * barWidth) + ", " + (maxHeight * 2 + gapBetweenPrimaryAndSecondaryRows - scaler(d.value)) + ')';
+        else
+            return 'translation(0, 0)';
     }
 
 // end class FunctionList
@@ -225,6 +239,16 @@ var Sorting = function () {
         }
     }
 
+    var initLogMessage = function (state) {
+        state.logMessage = "original array = [";
+
+        for (var i = 0; i < state.backlinks.length - 1; i++) {
+            state.logMessage += state.backlinks[i].value + ", ";
+        }
+
+        state.logMessage += state.backlinks[state.backlinks.length - 1].value + "]";
+    }
+
     this.bubbleSort = function (callback) {
         var numElements = statelist[0].backlinks.length;
         var state = StateHelper.copyState(statelist[0]);
@@ -240,33 +264,18 @@ var Sorting = function () {
             'while swapped'
         ]);
 
-        state.logMessage = "original array = [";
-
-        for (var i = 0; i < state.backlinks.length - 1; i++) {
-            state.logMessage += state.backlinks[i].value + ", ";
-        }
-
-        state.logMessage += state.backlinks[state.backlinks.length-1].value + "]";
+        initLogMessage(state);
 
         var swapped;
         var indexOfLastUnsortedElement = numElements;
         do {
             swapped = false;
 
-            if (currentStep > 0) {
-                state.logMessage = statelist[currentStep-1].logMessage;
-                console.log(state.logMessage);
-            } else {
-
-            }
-
             // Set the swapped flag to false.
             // Then iterate from 1 to {endIdx} inclusive.
             state.status = 'Set the swapped flag to false.<div>Then iterate from 1 to {endIdx} inclusive.</div>'.replace("{endIdx}", indexOfLastUnsortedElement - 1);
             state.lineNo = [2, 3];
             StateHelper.updateCopyPush(statelist, state);
-
-            console.log(statelist[0].logMessage + " aaa");
 
             for (var i = 1; i < indexOfLastUnsortedElement; i++) {
                 state.backlinks[i - 1].highlight = HIGHLIGHT_STANDARD;
@@ -286,9 +295,9 @@ var Sorting = function () {
                     state.status = 'Swapping the positions of {val1} and {val2}.<div>Set swapped = true.</div>'
                         .replace("{val1}", state.backlinks[i - 1].value)
                         .replace("{val2}", state.backlinks[i].value);
-                    state.logMessage += '<div>swap {val1} and {val2}</div>'
+                    state.logMessage = '<div>swap {val1} and {val2}</div>'
                         .replace("{val1}", state.backlinks[i - 1].value)
-                        .replace("{val2}", state.backlinks[i].value);
+                        .replace("{val2}", state.backlinks[i].value) + state.logMessage;
                     if (this.computeInversionIndex) {
                         swapCounter++;
                         // For inversion index computation: Add 1 to swapCounter.
@@ -351,6 +360,8 @@ var Sorting = function () {
             '  swap minimum with first unsorted position'
         ]);
 
+        initLogMessage(state);
+
         for (var i = 0; i < numElements - 1; i++) {
             var minPosition = i;
 
@@ -372,7 +383,10 @@ var Sorting = function () {
                 state.backlinks[j].highlight = HIGHLIGHT_NONE;
 
                 if (state.backlinks[j].value < state.backlinks[minPosition].value) {
-                    state.status = 'Set {val} as the new minimum.'.replace("{val}", state.backlinks[j].value);
+                    state.status = 'Set {val} as the new minimum.'
+                        .replace("{val}", state.backlinks[j].value);
+                    state.logMessage = '<div>{val} is the current minimum</div>'
+                        .replace("{val}", state.backlinks[j].value) + state.logMessage;
                     state.lineNo = 5;
                     state.backlinks[minPosition].highlight = HIGHLIGHT_NONE;
                     state.backlinks[j].highlight = HIGHLIGHT_SPECIAL;
@@ -384,7 +398,14 @@ var Sorting = function () {
 
             if (minPosition != i) { // Highlight the first-most unswapped position, if it isn't the minimum
                 // Set {val} as the new minimum.
-                state.status = 'Swap the minimum ({minVal}) with the first unsorted element ({element}).'.replace("{minVal}", state.backlinks[minPosition].value).replace("{element}", state.backlinks[i].value);
+                state.status = 'Swap the minimum ({minVal}) with the first unsorted element ({element}).'
+                    .replace("{minVal}", state.backlinks[minPosition].value)
+                    .replace("{element}", state.backlinks[i].value);
+
+                state.logMessage = '<div>swap {minVal} and {element}</div>'
+                    .replace("{minVal}", state.backlinks[minPosition].value)
+                    .replace("{element}", state.backlinks[i].value) + state.logMessage;
+
                 state.lineNo = 6;
                 state.backlinks[i].highlight = HIGHLIGHT_SPECIAL;
                 StateHelper.updateCopyPush(statelist, state);
@@ -407,7 +428,7 @@ var Sorting = function () {
         }
 
         for (var i = 0; i < numElements; i++)
-            state.backlinks[i].highlight = HIGHLIGHT_NONE; // un-highlight everything
+            state.backlinks[i].highlight = HIGHLIGHT_SORTED; // highlight everything
         // The array/list is now sorted.
         // (After all iterations, the last element will naturally be sorted.)
         state.status = 'List sorted!' + '<br>' + '(After all iterations, the last element will naturally be sorted.)';
@@ -433,6 +454,8 @@ var Sorting = function () {
             '      swap(i, storeIndex); storeIndex++',
             '  swap(pivot, storeIndex - 1)'
         ]);
+
+        initLogMessage(state);
 
         quickSortSplit(state, 0, numElements - 1);
 
@@ -481,8 +504,12 @@ var Sorting = function () {
             StateHelper.updateCopyPush(statelist, state);
 
             if (pivotIndex != startIndex) {
-                state.status = 'Swap pivot ({pivot}}, index {index}) with first element ({first}, index {firstIndex}). (storeIndex = {storeIndex}.)'.replace("{pivot}", state.backlinks[pivotIndex].value).replace("{index}", pivotIndex)
-                    .replace("{first}", state.backlinks[startIndex].value).replace("{firstIndex}", startIndex).replace("{storeIndex}", (startIndex + 1));
+                state.status = 'Swap pivot ({pivot}}, index {index}) with first element ({first}, index {firstIndex}). (storeIndex = {storeIndex}.)'
+                    .replace("{pivot}", state.backlinks[pivotIndex].value)
+                    .replace("{index}", pivotIndex)
+                    .replace("{first}", state.backlinks[startIndex].value)
+                    .replace("{firstIndex}", startIndex)
+                    .replace("{storeIndex}", (startIndex + 1));
 
                 state.lineNo = [2, 3];
 
@@ -497,6 +524,10 @@ var Sorting = function () {
             state.status += '<div>Selecting {pivot} as pivot. (storeIndex = {storeIndex}.)</div>'
                 .replace("{pivot}", state.backlinks[pivotIndex].value)
                 .replace("{storeIndex}", (startIndex + 1));
+
+            state.logMessage = '<div>Select {val} as pivot</div>'
+                .replace("{val}", state.backlinks[pivotIndex].value) + state.logMessage;
+
             state.lineNo = [1, 2, 3];
 
             state.backlinks[pivotIndex].highlight = HIGHLIGHT_PIVOT;
@@ -507,7 +538,9 @@ var Sorting = function () {
         var pivotValue = state.backlinks[pivotIndex].value;
 
         for (var i = storeIndex; i <= endIndex; i++) {
-            state.status = 'Checking if {val} < {pivot} (pivot).'.replace("{val}", state.backlinks[i].value).replace("{pivot}", pivotValue);
+            state.status = 'Checking if {val} < {pivot} (pivot).'
+                .replace("{val}", state.backlinks[i].value)
+                .replace("{pivot}", pivotValue);
             state.lineNo = [4, 5];
 
             state.backlinks[i].highlight = HIGHLIGHT_SPECIAL;
@@ -526,6 +559,9 @@ var Sorting = function () {
                 state.lineNo = [4, 6];
 
                 if (i != storeIndex) {
+                    state.logMessage = '<div>Swap {val1} and {val2}</div>'
+                        .replace("{val1}", state.backlinks[i].value)
+                        .replace("{val2}", state.backlinks[storeIndex].value) + state.logMessage;
                     EntryBacklinkHelper.swapBacklinks(state.backlinks, storeIndex, i);
                     StateHelper.updateCopyPush(statelist, state);
                 }
@@ -541,8 +577,16 @@ var Sorting = function () {
         state.lineNo = 4;
         StateHelper.updateCopyPush(statelist, state);
         if (storeIndex - 1 != pivotIndex) {
-            state.status = 'Swapping pivot (index = {pivotIdx}, value = {pivot}) with element at storeIndex - 1 (index = {newIdx}, value = {newVal}).'.replace("{pivotIdx}", pivotIndex).replace("{pivot}", pivotValue)
-                .replace("{newIdx}", (storeIndex - 1)).replace("{newVal}", state.backlinks[storeIndex - 1].value);
+            state.status = 'Swapping pivot (index = {pivotIdx}, value = {pivot}) with element at storeIndex - 1 (index = {newIdx}, value = {newVal}).'
+                .replace("{pivotIdx}", pivotIndex)
+                .replace("{pivot}", pivotValue)
+                .replace("{newIdx}", (storeIndex - 1))
+                .replace("{newVal}", state.backlinks[storeIndex - 1].value);
+
+            state.logMessage = '<div>Swap {val1} and {val2}</div>'
+                .replace("{val1}", pivotValue)
+                .replace("{val2}", state.backlinks[storeIndex - 1].value) + state.logMessage;
+
             state.lineNo = 7;
             EntryBacklinkHelper.swapBacklinks(state.backlinks, storeIndex - 1, pivotIndex);
             StateHelper.updateCopyPush(statelist, state);
@@ -567,6 +611,239 @@ var Sorting = function () {
         return true;
     }
 
+    this.insertionSort = function (callback) {
+        var numElements = statelist[0].backlinks.length;
+        var state = StateHelper.copyState(statelist[0]);
+
+        populatePseudocode([
+            'mark first element as sorted',
+            '  for each unsorted element X',
+            '    extract the element X',
+            '    for j = lastSortedIndex down to 0',
+            '      if current element j > X',
+            '        move sorted element to the right by 1',
+            '      break loop and insert X here'
+        ]);
+
+        initLogMessage(state);
+
+        // Mark first element is sorted
+        state.status = "Mark the first element ({first}) as sorted"
+            .replace('{first}', state.backlinks[0].value);
+        state.backlinks[0].highlight = HIGHLIGHT_SORTED;
+        state.lineNo = 1;
+        StateHelper.updateCopyPush(statelist, state);
+
+        // Start loop forward
+        for (var i = 1; i < numElements; i++) {
+            state.backlinks[i].highlight = HIGHLIGHT_SPECIAL;
+            state.lineNo = [2, 3];
+            state.status = "Extract the first unsorted element ({val})".replace('{val}', state.backlinks[i].value);
+            StateHelper.updateCopyPush(statelist, state);
+            state.backlinks[i].secondaryPositionStatus = POSITION_USE_SECONDARY_IN_DEFAULT_POSITION;
+
+            // Start loop backward from i index
+            for (var j = (i - 1); j >= 0; j--) {
+                state.backlinks[j].highlight = HIGHLIGHT_STANDARD;
+                state.lineNo = 4;
+                state.status = "Figure where to insert extracted element; comparing with sorted element {val}.".replace('{val}', state.backlinks[j].value);
+                StateHelper.updateCopyPush(statelist, state);
+                if (state.backlinks[j].value > state.backlinks[j + 1].value) {
+                    // Swap
+                    state.backlinks[j].highlight = HIGHLIGHT_SORTED;
+                    state.lineNo = [5, 6];
+                    state.status = "<div>{val1} > {val2} is true, hence move current sorted element ({val1}) to the right by 1.</div>"
+                        .replace('{val1}', state.backlinks[j].value).replace('{val2}', state.backlinks[j + 1].value);
+                    EntryBacklinkHelper.swapBacklinks(state.backlinks, j, j + 1);
+
+                    if (j > 0) {
+                        state.backlinks[j - 1].highlight = HIGHLIGHT_STANDARD;
+                        StateHelper.updateCopyPush(statelist, state);
+                    }
+                } else {
+                    state.backlinks[j].highlight = HIGHLIGHT_SORTED;
+                    state.backlinks[j + 1].highlight = HIGHLIGHT_SORTED;
+                    state.lineNo = 7;
+                    state.status = "{val1} > {val2} is false, insert element at current position."
+                        .replace('{val1}', state.backlinks[j].value)
+                        .replace('{val2}', state.backlinks[j + 1].value);
+                    state.backlinks[j + 1].secondaryPositionStatus = POSITION_USE_PRIMARY;
+                    StateHelper.updateCopyPush(statelist, state);
+                    break;
+                }
+
+                if (j == 0) {
+                    StateHelper.updateCopyPush(statelist, state);
+
+                    state.backlinks[j].secondaryPositionStatus = POSITION_USE_PRIMARY;
+                    // StateHelper.updateCopyPush(statelist, state);
+                    state.backlinks[j].highlight = HIGHLIGHT_SORTED;
+                    StateHelper.updateCopyPush(statelist, state);
+
+                }
+            } // End backward loop
+        } // End forward loop
+
+        state.lineNo = 0;
+        state.status = "List sorted!";
+        StateHelper.updateCopyPush(statelist, state);
+
+        this.play(callback);
+        return true;
+    }
+
+    this.cocktailShakerSort = function (callback) {
+        var numElements = statelist[0].backlinks.length;
+        var state = StateHelper.copyState(statelist[0]);
+
+        var swapped = true;
+        var start = 0;
+        var end = numElements;
+
+        // Start while loop
+        while (swapped) {
+            // Reset the swapped flag to enter the loop
+            swapped = false;
+
+            // Start loop forward, sort like bubble sort
+            for (var i = start; i < end - 1; i++) {
+                state.backlinks[i].highlight = HIGHLIGHT_STANDARD;
+                StateHelper.updateCopyPush(statelist, state);
+
+                if (i + 1 <= end) {
+                    state.backlinks[i + 1].highlight = HIGHLIGHT_SPECIAL;
+                    StateHelper.updateCopyPush(statelist, state);
+                }
+
+                if (state.backlinks[i].value > state.backlinks[i + 1].value) {
+                    EntryBacklinkHelper.swapBacklinks(state.backlinks, i, i + 1);
+                    StateHelper.updateCopyPush(statelist, state);
+
+                    state.backlinks[i].highlight = HIGHLIGHT_NONE;
+                    if (i === end - 2) {
+                        state.backlinks[end - 1].highlight = HIGHLIGHT_SORTED;
+                    }
+                    StateHelper.updateCopyPush(statelist, state);
+                    swapped = true;
+                } else {
+                    state.backlinks[i].highlight = HIGHLIGHT_NONE;
+                    if (i < end - 2) {
+                        state.backlinks[i + 1].highlight = HIGHLIGHT_STANDARD;
+                    } else if (i === end - 2) {
+                        state.backlinks[end - 1].highlight = HIGHLIGHT_SORTED;
+                    }
+                    StateHelper.updateCopyPush(statelist, state);
+                }
+            }
+
+            if (!swapped) {
+                break;
+            }
+
+            // Set swapped flag to run loop backward
+            swapped = false;
+
+            // Last index is already sorted
+            end = end - 1;
+
+            for (var i = end - 1; i > start; i--) {
+                state.backlinks[i].highlight = HIGHLIGHT_STANDARD;
+                StateHelper.updateCopyPush(statelist, state);
+
+                if (i - 1 >= start) {
+                    state.backlinks[i - 1].highlight = HIGHLIGHT_SPECIAL;
+                    StateHelper.updateCopyPush(statelist, state);
+                }
+
+                if (state.backlinks[i].value < state.backlinks[i - 1].value) {
+                    EntryBacklinkHelper.swapBacklinks(state.backlinks, i, i - 1);
+                    StateHelper.updateCopyPush(statelist, state);
+
+                    state.backlinks[i].highlight = HIGHLIGHT_NONE;
+                    if (i === start + 1) {
+                        state.backlinks[start].highlight = HIGHLIGHT_SORTED;
+                    }
+                    StateHelper.updateCopyPush(statelist, state);
+                    swapped = true;
+                } else {
+                    state.backlinks[i].highlight = HIGHLIGHT_NONE;
+                    if (i > start + 1) {
+                        state.backlinks[i - 1].highlight = HIGHLIGHT_STANDARD;
+                    } else if (i === start + 1) {
+                        state.backlinks[start].highlight = HIGHLIGHT_SORTED;
+                    }
+                    StateHelper.updateCopyPush(statelist, state);
+                }
+            }
+
+            // First index is already sorted
+            start = start + 1;
+        } // End while loop
+
+        state.status = "List sorted!";
+        for (var i = 0; i < numElements; i++) {
+            state.backlinks[i].highlight = HIGHLIGHT_SORTED;
+        }
+        StateHelper.updateCopyPush(statelist, state);
+
+        this.play(callback);
+        return true;
+    }
+
+    this.shellSort = function (callback) {
+        var numElements = statelist[0].backlinks.length;
+        var state = StateHelper.copyState(statelist[0]);
+
+        // Start big gap loop, then reduce gap by 1
+        // You have to floor the gap, or it will get bug
+        for (var gap = Math.floor(numElements / 2); gap > 0; gap = Math.floor(gap / 2)) {
+
+            for (var i = gap; i < numElements; i++) {
+
+                for (var j = i; j >= gap;) {
+                    state.backlinks[j].highlight = HIGHLIGHT_STANDARD;
+                    state.backlinks[j].secondaryPositionStatus = POSITION_USE_SECONDARY_IN_DEFAULT_POSITION;
+                    state.backlinks[j - gap].highlight = HIGHLIGHT_STANDARD;
+                    state.backlinks[j - gap].secondaryPositionStatus = POSITION_USE_SECONDARY_IN_DEFAULT_POSITION;
+                    StateHelper.updateCopyPush(statelist, state);
+                    if (state.backlinks[j - gap].value > state.backlinks[j].value) {
+                        EntryBacklinkHelper.swapBacklinks(state.backlinks, j, j - gap);
+                        StateHelper.updateCopyPush(statelist, state);
+
+                        state.backlinks[j].secondaryPositionStatus = POSITION_USE_PRIMARY;
+                        state.backlinks[j - gap].secondaryPositionStatus = POSITION_USE_PRIMARY;
+                        StateHelper.updateCopyPush(statelist, state);
+
+
+                        state.backlinks[j].highlight = HIGHLIGHT_NONE;
+                        state.backlinks[j - gap].highlight = HIGHLIGHT_NONE;
+                        StateHelper.updateCopyPush(statelist, state);
+                    } else {
+                        state.backlinks[j].secondaryPositionStatus = POSITION_USE_PRIMARY;
+                        state.backlinks[j - gap].secondaryPositionStatus = POSITION_USE_PRIMARY;
+                        StateHelper.updateCopyPush(statelist, state);
+
+                        state.backlinks[j].highlight = HIGHLIGHT_NONE;
+                        state.backlinks[j - gap].highlight = HIGHLIGHT_NONE;
+                        StateHelper.updateCopyPush(statelist, state);
+                        break;
+                    }
+                    j -= gap;
+                }
+            } // End for i
+
+        } // End for gap
+
+        state.status = "List sorted!";
+        for (var i = 0; i < numElements; i++) {
+            state.backlinks[i].highlight = HIGHLIGHT_SORTED;
+            StateHelper.updateCopyPush(statelist, state);
+        }
+        this.play(callback);
+
+        return true;
+    }
+
     var drawCurrentState = function () {
         drawState(currentStep);
         if (currentStep == (statelist.length - 1)) {
@@ -580,7 +857,6 @@ var Sorting = function () {
     var drawState = function (stateIndex) {
         drawBars(statelist[stateIndex]);
         $('#status p').html(statelist[stateIndex].status);
-        console.log(statelist[stateIndex].logMessage);
         $('#log p').html(statelist[stateIndex].logMessage);
         highlightLine(statelist[stateIndex].lineNo);
     };
@@ -695,40 +971,44 @@ var Sorting = function () {
         this.loadNumberList(numArray);
     }
 
-    this.init = function() {
+    this.init = function () {
         this.createList();
         // showCodetracePanel();
         // showStatusPanel();
     }
 
-    this.setSelectedSortFunction = function(f) {
+    this.setSelectedSortFunction = function (f) {
         this.selectedSortFunction = f;
         // this.sort();
         // isRadixSort = (this.selectedSortFunction == this.radixSort);
         // isCountingSort = (this.selectedSortFunction == this.countingSort);
     }
 
-    this.sort = function(callback) {
+    this.sort = function (callback) {
         return this.selectedSortFunction(callback);
     }
 
-    this.getCurrentIteration = function() { return currentStep; }
+    this.getCurrentIteration = function () {
+        return currentStep;
+    }
 
-    this.getTotalIteration = function() { return statelist.length; }
+    this.getTotalIteration = function () {
+        return statelist.length;
+    }
 
-    this.forceNext = function() {
+    this.forceNext = function () {
         if ((currentStep + 1) < statelist.length)
             currentStep++;
         drawCurrentState();
     }
 
-    this.forcePrevious = function() {
-        if ((currentStep-1) >= 0)
+    this.forcePrevious = function () {
+        if ((currentStep - 1) >= 0)
             currentStep--;
         drawCurrentState();
     }
 
-    this.jumpToIteration = function(n) {
+    this.jumpToIteration = function (n) {
         currentStep = n;
         drawCurrentState();
     }
@@ -737,12 +1017,17 @@ var Sorting = function () {
 
 var title = document.getElementById('title');
 
+var note = document.getElementById('noteContent');
+
 // var gw = new Sorting();
 
 $('#bubbleSort').click(function () {
     if (!gw.issPlaying) {
         title.innerHTML = "Bubble Sort";
         changeSortType(gw.bubbleSort);
+        note.innerHTML = '<h1>Bubble Sort</h1><br/>';
+        note.innerHTML += "<div>Bubble sort, sometimes referred to as sinking sort, is a simple sorting algorithm that repeatedly steps through the list to be sorted, compares each pair of adjacent items and swaps them if they are in the wrong order. The pass through the list is repeated until no swaps are needed, which indicates that the list is sorted.</div>";
+
     } else {
         sort();
     }
@@ -752,6 +1037,9 @@ $('#selectionSort').click(function () {
     if (!gw.issPlaying) {
         title.innerHTML = "Selection Sort";
         changeSortType(gw.selectionSort);
+
+        note.innerHTML = '<h1>Selection Sort</h1><br/>';
+        note.innerHTML += "<div>Selection sort is a sorting algorithm, specifically an in-place comparison sort. It has O(n2) time complexity, making it inefficient on large lists, and generally performs worse than the similar insertion sort. Selection sort is noted for its simplicity, and it has performance advantages over more complicated algorithms in certain situations, particularly where auxiliary memory is limited.</div>";
     } else {
         sort();
     }
@@ -761,12 +1049,53 @@ $('#quickSort').click(function () {
     if (!gw.issPlaying) {
         title.innerHTML = "Quick Sort";
         changeSortType(gw.quickSort);
+
+        note.innerHTML = '<h1>Quick Sort</h1><br/>';
+        note.innerHTML += "<div>Quicksort (sometimes called partition-exchange sort) is an efficient sorting algorithm, serving as a systematic method for placing the elements of an array in order. Developed by Tony Hoare in 1959, with his work published in 1961, it is still a commonly used algorithm for sorting. When implemented well, it can be about two or three times faster than its main competitors, merge sort and heapsort.</div>";
     } else {
         sort();
     }
 });
 
-window.onload = function() {
+$('#insertionSort').click(function () {
+    if (!gw.issPlaying) {
+        title.innerHTML = "Insertion Sort";
+        changeSortType(gw.insertionSort);
+
+        note.innerHTML = '<h1>Insertion Sort</h1><br/>';
+        note.innerHTML += "<div>Insertion sort is a simple sorting algorithm that builds the final sorted array (or list) one item at a time. It is much less efficient on large lists than more advanced algorithms such as quicksort, heapsort, or merge sort.</div>";
+
+    } else {
+        sort();
+    }
+});
+
+$('#cocktailSort').click(function () {
+    if (!gw.issPlaying) {
+        title.innerHTML = "Cocktail Shaker Sort";
+        changeSortType(gw.cocktailShakerSort);
+
+        note.innerHTML = '<h2>Cocktail Shaker Sort</h2><br/>';
+        note.innerHTML += "<div>Cocktail shaker sort, also known as bidirectional bubble sort, cocktail sort, shaker sort (which can also refer to a variant of selection sort), ripple sort, shuffle sort, or shuttle sort, is a variation of bubble sort that is both a stable sorting algorithm and a comparison sort. The algorithm differs from a bubble sort in that it sorts in both directions on each pass through the list. This sorting algorithm is only marginally more difficult to implement than a bubble sort, and solves the problem of turtles in bubble sorts</div>  ";
+
+    } else {
+        sort();
+    }
+});
+
+$('#shellSort').click(function () {
+    if (!gw.issPlaying) {
+        title.innerHTML = "Shell Sort";
+        changeSortType(gw.shellSort);
+
+        note.innerHTML = '<h1>Shell Sort</h1><br/>';
+        note.innerHTML += "<div>Shellsort, also known as Shell sort or Shell's method, is an in-place comparison sort. It can be seen as either a generalization of sorting by exchange (bubble sort) or sorting by insertion (insertion sort). The method starts by sorting pairs of elements far apart from each other, then progressively reducing the gap between elements to be compared.</div>";
+    } else {
+        sort();
+    }
+});
+
+window.onload = function () {
     var reloading = sessionStorage.getItem("type");
     // gw = new Sorting();
     switch (reloading) {
@@ -823,19 +1152,15 @@ function changeSortType(newSortingFunction) {
 
 function createList() {
     if (isPlaying) stop();
-    setTimeout(function() {
+    setTimeout(function () {
         gw.createList();
         isPlaying = false;
-        // if (gw.createList()) {
-        //     $('#progress-bar').slider("option", "max", 0);
-        //     isPlaying = false;
-        // }
     }, 1000);
 }
 
 function sort(callback) {
     if (isPlaying) stop();
-    setTimeout(function() {
+    setTimeout(function () {
         if (gw.sort(callback)) {
             isPlaying = true;
         }
